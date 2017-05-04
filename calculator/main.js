@@ -2,7 +2,8 @@
 var value1;
 var value2;
 var SelectedFunc = null;
-let funkClicked = false;
+var funkClicked = false;
+var previousButton = '';
 
 function start() {
     //create event handles for each button.
@@ -18,17 +19,19 @@ document.onreadystatechange = function () {
         // Initialize your application or run some code.
         start();
     }
-}
+};
 
 //Decide what button was pressed. Save the value
 function ButtonLogic(evt) {
   var BtnValue = evt.target.innerHTML;
 
-  if (0 <= BtnValue && BtnValue <= 9) {
+  if ( (0 <= BtnValue && BtnValue <= 9) || BtnValue === '.') {
     Num(BtnValue);
   } else {
     Func(BtnValue);
   }
+
+  previousButton = BtnValue;
 }
 
 function isNumeric(n) {
@@ -37,7 +40,15 @@ function isNumeric(n) {
 
 //Handle numbers
 function Num(n) {
-  //document.getElementById('display').value = n;
+
+  if (previousButton === '=') {
+    // We just executed a calculation.
+    // User pressed a number.
+    // Pretend as if the calculator was cleared
+    // before this number was pressed.
+    Clear();
+  } 
+
   if (!funkClicked) {
       value1 = value1 === undefined ? n : value1.concat(n);
       document.getElementById("display").value = value1;
@@ -45,17 +56,12 @@ function Num(n) {
       value2 = value2 === undefined ? n : value2.concat(n);
       document.getElementById("display").value = value2;
   }
-  // if (value1 === null) {
-  //   value1 = document.getElementById("display").value + n;
-  //   document.getElementById("display").value = value1;
-  // } else if (value2 === null) {
-  //   value2 = n;
-  // }
 }
 
 //Handle functions
 function Func(f) {
   funkClicked = true;
+
   if (f == "C") {
     funkClicked = false;
     Clear();
@@ -63,6 +69,15 @@ function Func(f) {
     funkClicked = false;
     Calculate();
   } else {
+
+    if (previousButton === '=') {
+      // We just executed a calculation.
+      // User pressed an operator.
+      // Save the total as value1, 
+      // then continue as normal.
+      value1 = document.getElementById("display").value;
+    } 
+
     SelectedFunc = f;
   }
 }
@@ -91,6 +106,7 @@ function Calculate() {
   value1 = Total;
   value2 = undefined;
   funkClicked = false;
+  justCalculated = true;
   document.getElementById("display").value = Total;
 }
 
@@ -100,4 +116,5 @@ function Clear() {
   value1 = undefined;
   value2 = undefined;
   SelectedFunc = null;
+  funkClicked = false;
 }
