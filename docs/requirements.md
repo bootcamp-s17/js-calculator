@@ -64,3 +64,7 @@ numbers and operators to be stored.
 
 All features of Upgrade 2, but use recursion to calculate the results.
 
+## Additional enhancements
+
+1. Accept keyboard input
+
