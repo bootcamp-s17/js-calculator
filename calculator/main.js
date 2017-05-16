@@ -1,120 +1,59 @@
-//store values between button presses
-var value1;
-var value2;
-var SelectedFunc = null;
-var funkClicked = false;
-var previousButton = '';
+/*-------------------------------ES5 Syntax-----------------------------------*/
 
-function start() {
-    //create event handles for each button.
-    var buttons = document.getElementsByClassName("key");
-    for (i = 0; i < buttons.length; i++) {
-      buttons[i].addEventListener("click", ButtonLogic);
-    }
-}
+// Initialize variables
+var value = []; // Stores input
+var num = true; // Determines if a number was selected last
 
 // Waits for page to load before firing
 document.onreadystatechange = function () {
     if (document.readyState == "interactive") {
         // Initialize your application or run some code.
-        start();
+        //create event handles for each button.
+        var buttons = document.getElementsByClassName("key");
+        for (var i = 0; i < buttons.length; i++) {
+            buttons[i].addEventListener("click", buttonLogic);
+        }
     }
 };
 
 //Decide what button was pressed. Save the value
-function ButtonLogic(evt) {
-  var BtnValue = evt.target.innerHTML;
-
-  if ( (0 <= BtnValue && BtnValue <= 9) || BtnValue === '.') {
-    Num(BtnValue);
-  } else {
-    Func(BtnValue);
-  }
-
-  previousButton = BtnValue;
-}
-
-function isNumeric(n) {
-  return !isNaN(parseFloat(n)) && isFinite(n);
-}
-
-//Handle numbers
-function Num(n) {
-
-  if (previousButton === '=') {
-    // We just executed a calculation.
-    // User pressed a number.
-    // Pretend as if the calculator was cleared
-    // before this number was pressed.
-    Clear();
-  } 
-
-  if (!funkClicked) {
-      value1 = value1 === undefined ? n : value1.concat(n);
-      document.getElementById("display").value = value1;
-  } else {
-      value2 = value2 === undefined ? n : value2.concat(n);
-      document.getElementById("display").value = value2;
-  }
-}
-
-//Handle functions
-function Func(f) {
-  funkClicked = true;
-
-  if (f == "C") {
-    funkClicked = false;
-    Clear();
-  } else if (f == "=") {
-    funkClicked = false;
-    Calculate();
-  } else {
-
-    if (previousButton === '=') {
-      // We just executed a calculation.
-      // User pressed an operator.
-      // Save the total as value1, 
-      // then continue as normal.
-      value1 = document.getElementById("display").value;
-    } 
-
-    SelectedFunc = f;
-  }
+function buttonLogic(evt) {
+    var btnValue = evt.target.innerHTML; // grab button text
+    if (btnValue === "C") { // calls clear when "C" is clicked
+        clear();
+    } else if (btnValue === '=') { // calls calculate when "=" is clicked
+        calculate();
+    } else {
+        // if button is 0 to 9 or .
+        if ( (0 <= btnValue && btnValue <= 9) || btnValue === '.') {
+            num = true;
+            value.push(btnValue);
+            document.getElementById("display").value = value.join('');
+        } else if (value.length > 0) { // only fire if a number exists
+            if (num) {
+                value.push(btnValue); // if number was last selected
+            } else {
+                // if an operator was last selected, replace it
+                value.splice(value.length - 1, 1, btnValue);
+            }
+            num = false;
+            document.getElementById("display").value = value.join('');
+        }
+    }
 }
 
 //Perform the calculation
-function Calculate() {
-  var Total = 0;
-
-  switch (SelectedFunc) {
-    case "/":
-      Total = Number(value1) / Number(value2);
-      break;
-    case "X":
-      Total = Number(value1) * Number(value2);
-      break;
-    case "-":
-      Total = Number(value1) - Number(value2);
-      break;
-    case "+":
-      Total = Number(value1) + Number(value2);
-      break;
-    default:
-      alert("No Function Selected");
-      break;
-  }
-  value1 = Total;
-  value2 = undefined;
-  funkClicked = false;
-  justCalculated = true;
-  document.getElementById("display").value = Total;
+function calculate() {
+    if (!num) {
+        value.pop(); // remove operator at the end
+    }
+    value = value.join('').replace('X', '*'); // replace X with *
+    document.getElementById("display").value = eval(value);
+    value = [eval(value)]; // eval calculates a string
 }
 
 //clear all values
-function Clear() {
-  document.getElementById("display").value = 0;
-  value1 = undefined;
-  value2 = undefined;
-  SelectedFunc = null;
-  funkClicked = false;
+function clear() {
+    document.getElementById("display").value = 0;
+    value = [];
 }
